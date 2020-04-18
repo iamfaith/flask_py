@@ -9,6 +9,7 @@
             Directory listing for "{{meta.current_directory}}"
           </div>
           <div class="card-block">
+            <h4>Total: {{files|length}} websites</h4>
             <table class="table">
               <thead>
                 <tr>
@@ -46,7 +47,7 @@
                 {% for file in files %}
                   <tr>
                     <td>
-                      <i class="fa fa-file-o"></i> {{ file.name }}
+                      <i class="fa fa-file-o"></i> <a href="show/{{ file.name|urlencode }}.html" >{{ file.name }}</a
                     </td>
                     <td>
                       {{ file.size }}
@@ -55,12 +56,51 @@
                       <span class="label label-primary">{{ file.mime }}</span>
                     </td>
                     <td>
-                      <a href="download/{{ file.fullname|urlencode }}" class="label label-success"><i class="fa fa-download"></i> Download</a>
+                      <a class="label label-success"><i class="fa fa-download"></i> Not supported</a>
                     </td>
                 </tr>
                 {% endfor %}
+
               </tbody>
             </table>
+
+            <h4>The following list of website({{unconnected|length}}) can not be accessed by digicert</h4>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>
+                    Name
+                  </th>
+                  <th>
+                    Size
+                  </th>
+                  <th>
+                    MIME
+                  </th>
+                  <th>
+                    Download
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for file in unconnected %}
+                  <tr>
+                    <td>
+                      <i class="fa fa-file-o"></i> <a href="show/{{ file.name|urlencode }}.html" >{{ file.name }}</a
+                    </td>
+                    <td>
+                      {{ file.size }}
+                    </td>
+                    <td>
+                      <span class="label label-primary">{{ file.mime }}</span>
+                    </td>
+                    <td>
+                      <a class="label label-success"><i class="fa fa-download"></i> Not supported</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+
           </div>
         </div>
     </div>

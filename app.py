@@ -17,10 +17,10 @@ from pprint import pprint
 import magic
 import urllib
 import sys
-
+from importlib import reload
 reload(sys)
-sys.setdefaultencoding('utf8')
-
+#sys.setdefaultencoding('utf8')
+from pathlib import Path
 app = Flask(__name__)
 mime = magic.Magic(mime=True)
 
@@ -28,12 +28,15 @@ mime = magic.Magic(mime=True)
 This is the configuration
 """
 # To list the current directory of the script, use os.path.dirname(os.path.abspath(__file__))
-base_directory = os.path.dirname(os.path.abspath(__file__))
+print(os.path.join(os.path.dirname(__file__), '..'))
+print(os.path.dirname(os.path.abspath(__file__)))
+base_directory = os.path.join(os.path.dirname(__file__), '../host') #os.path.dirname(os.path.abspath(__file__))
+vul_directory = os.path.join(os.path.dirname(__file__), '../vul')
 # These directories will not be listed
 ignored_dirs = ["venv"]
 ignore_dotfiles = True
 ignore_dollarfiles = True
-omit_folders = True
+omit_folders = False
 omit_files = False
 
 """ The base route with the file list """
@@ -70,10 +73,10 @@ def home():
                         continue
 
                 files.append({
-                    "name": name,
+                    "name": name.replace('.html', ''),
                     "size": str(size) + " B",
                     "mime": mime.from_file(fullpath),
-                    "fullname": urllib.quote_plus(fullpath)
+                    "fullname": fullpath #urllib.quote_plus(fullpath)
                 })
 
         for dirname in dirnames:
@@ -97,8 +100,32 @@ def home():
                 "size": "0b",
                 "mime": mime.from_file(fullpath)
             })
+    
+    
+    unconnected = list(filter(lambda x: x["size"] == "40 B", files))
+    connected = list(filter(lambda x: x["size"] != "40 B", files))
+    # print(unconnected)
+    return render_template("index.html", files=sorted(connected, key=lambda x: x["size"]), unconnected=unconnected, folders=dirs, meta=meta)
+    # return render_template("index.html", files=sorted(files, key=lambda x: x["size"]), folders=dirs, meta=meta)
+    # return render_template("index.html", files=sorted(files, key=lambda k: k["name"].lower()), folders=dirs, meta=meta)
 
-    return render_template("index.html", files=sorted(files, key=lambda k: k["name"].lower()), folders=dirs, meta=meta)
+@app.route("/show/<filename>")
+def show(filename):
+    filePath = base_directory + '/' +filename
+    if os.path.isfile(filePath):
+        # if os.path.dirname(filename) == base_directory.rstrip("/"):
+            vulFile = vul_directory + "/" + filename
+            vulContent = ""
+            print('checking')
+            if os.path.isfile(vulFile):
+                vulContent = Path(vulFile).read_text()
+                print('--', vulContent)
+            return Path(filePath).read_text() + vulContent
+        # else:
+            # return render_template("no_permission.html")
+    else:
+        return render_template("not_found.html")
+    return None
 
 @app.route("/download/<filename>")
 def download(filename):
